@@ -114,7 +114,7 @@ app.post("/beneficiary/create", async (req, res) => {
         : [req.body.transfer_methods],
     };
 
-    // 👉 Create beneficiary
+    // Create beneficiary on Airwallex
     const response = await axios.post(
       `${BASE_URL}/api/v1/beneficiaries/create`,
       payload,
@@ -126,11 +126,29 @@ app.post("/beneficiary/create", async (req, res) => {
       }
     );
 
+    // Save to MongoDB
+    const beneficiary = new Beneficiary({
+      beneficiary_id: response.data.id || "",
+
+      beneficiary: payload.beneficiary,
+
+      transfer_methods: payload.transfer_methods,
+
+      airwallex_response: response.data,
+    });
+
+    await beneficiary.save();
+
+    console.log("Beneficiary saved to MongoDB");
+
     res.send(`
-      <h2>✅ Beneficiary Created Successfully</h2>
+      <h2>✅ Beneficiary Created & Saved</h2>
+
       <pre>${JSON.stringify(response.data, null, 2)}</pre>
+
       <a href="/">Go Back</a>
     `);
+
   } catch (error) {
     console.error(
       "Airwallex Error:",
@@ -139,15 +157,18 @@ app.post("/beneficiary/create", async (req, res) => {
 
     res.status(500).send(`
       <h2>❌ Failed to Create Beneficiary</h2>
+
       <pre>${JSON.stringify(
         error.response?.data || error.message,
         null,
         2
       )}</pre>
+
       <a href="/">Go Back</a>
     `);
   }
 });
+
 
 // Start server
 app.listen(PORT, () => {
