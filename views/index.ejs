@@ -4,7 +4,11 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  />
+
   <title>Create Beneficiary</title>
 
   <style>
@@ -15,15 +19,15 @@
     }
 
     .container {
-      max-width: 800px;
+      max-width: 1000px;
       margin: auto;
       background: #fff;
       padding: 25px;
       border-radius: 8px;
     }
 
+    h1,
     h2 {
-      margin-top: 30px;
       color: #333;
     }
 
@@ -59,12 +63,37 @@
     button:hover {
       background: #0056b3;
     }
+
+    .beneficiary-card {
+      border: 1px solid #ddd;
+      padding: 20px;
+      margin-top: 20px;
+      border-radius: 8px;
+      background: #fafafa;
+    }
+
+    .delete-btn {
+      background: red;
+    }
+
+    .delete-btn:hover {
+      background: darkred;
+    }
+
+    pre {
+      overflow-x: auto;
+      background: #222;
+      color: #0f0;
+      padding: 15px;
+      border-radius: 6px;
+    }
   </style>
 </head>
 
 <body>
 
   <div class="container">
+
     <h1>Create Beneficiary</h1>
 
     <form action="/beneficiary/create" method="POST">
@@ -74,27 +103,45 @@
 
       <div class="form-group">
         <label>City</label>
-        <input type="text" name="address[city]" required />
+        <input
+          type="text"
+          name="address[city]"
+          required
+        />
       </div>
 
       <div class="form-group">
         <label>Country Code</label>
-        <input type="text" name="address[country_code]" required />
+        <input
+          type="text"
+          name="address[country_code]"
+          required
+        />
       </div>
 
       <div class="form-group">
         <label>Postcode</label>
-        <input type="text" name="address[postcode]" required />
+        <input
+          type="text"
+          name="address[postcode]"
+        />
       </div>
 
       <div class="form-group">
         <label>State</label>
-        <input type="text" name="address[state]" required />
+        <input
+          type="text"
+          name="address[state]"
+        />
       </div>
 
       <div class="form-group">
         <label>Street Address</label>
-        <input type="text" name="address[street_address]" required />
+        <input
+          type="text"
+          name="address[street_address]"
+          required
+        />
       </div>
 
       <!-- Bank Details -->
@@ -102,32 +149,56 @@
 
       <div class="form-group">
         <label>Account Currency</label>
-        <input type="text" name="bank_details[account_currency]" required />
+        <input
+          type="text"
+          name="bank_details[account_currency]"
+          required
+        />
       </div>
 
       <div class="form-group">
         <label>Account Name</label>
-        <input type="text" name="bank_details[account_name]" required />
+        <input
+          type="text"
+          name="bank_details[account_name]"
+          required
+        />
       </div>
 
       <div class="form-group">
         <label>Account Number</label>
-        <input type="text" name="bank_details[account_number]" required />
+        <input
+          type="text"
+          name="bank_details[account_number]"
+          required
+        />
       </div>
 
       <div class="form-group">
         <label>Bank Country Code</label>
-        <input type="text" name="bank_details[bank_country_code]" required />
+        <input
+          type="text"
+          name="bank_details[bank_country_code]"
+          required
+        />
       </div>
 
       <div class="form-group">
         <label>Bank Name</label>
-        <input type="text" name="bank_details[bank_name]" required />
+        <input
+          type="text"
+          name="bank_details[bank_name]"
+          required
+        />
       </div>
 
       <div class="form-group">
         <label>SWIFT Code</label>
-        <input type="text" name="bank_details[swift_code]" required />
+        <input
+          type="text"
+          name="bank_details[swift_code]"
+          required
+        />
       </div>
 
       <!-- Company -->
@@ -135,21 +206,40 @@
 
       <div class="form-group">
         <label>Company Name</label>
-        <input type="text" name="company_name" required />
+        <input
+          type="text"
+          name="company_name"
+          required
+        />
       </div>
 
       <div class="form-group">
         <label>Entity Type</label>
-        <select name="entity_type" required>
-          <option value="COMPANY">COMPANY</option>
-          <option value="PERSONAL">PERSONAL</option>
+
+        <select
+          name="entity_type"
+          required
+        >
+          <option value="COMPANY">
+            COMPANY
+          </option>
+
+          <option value="PERSONAL">
+            PERSONAL
+          </option>
         </select>
       </div>
 
       <div class="form-group">
         <label>Type</label>
-        <select name="type" required>
-          <option value="BANK_ACCOUNT">BANK_ACCOUNT</option>
+
+        <select
+          name="type"
+          required
+        >
+          <option value="BANK_ACCOUNT">
+            BANK_ACCOUNT
+          </option>
         </select>
       </div>
 
@@ -158,14 +248,89 @@
 
       <div class="form-group">
         <label>Transfer Method</label>
-        <select name="transfer_methods[]" required>
-          <option value="SWIFT">SWIFT</option>
+
+        <select
+          name="transfer_methods[]"
+          required
+        >
+          <option value="SWIFT">
+            SWIFT
+          </option>
         </select>
       </div>
 
-      <button type="submit">Create Beneficiary</button>
+      <button type="submit">
+        Create Beneficiary
+      </button>
 
     </form>
+
+    <!-- LIST BENEFICIARIES -->
+
+    <h1 style="margin-top:60px;">
+      Saved Beneficiaries
+    </h1>
+
+    <% if (beneficiaries.length === 0) { %>
+
+      <p>No beneficiaries found.</p>
+
+    <% } %>
+
+    <% beneficiaries.forEach(item => { %>
+
+      <div class="beneficiary-card">
+
+        <h2>
+          <%= item.beneficiary.company_name || "No Company Name" %>
+        </h2>
+
+        <p>
+          <strong>Beneficiary ID:</strong>
+          <%= item.beneficiary_id %>
+        </p>
+
+        <p>
+          <strong>City:</strong>
+          <%= item.beneficiary.address.city %>
+        </p>
+
+        <p>
+          <strong>Country:</strong>
+          <%= item.beneficiary.address.country_code %>
+        </p>
+
+        <p>
+          <strong>Bank:</strong>
+          <%= item.beneficiary.bank_details.bank_name %>
+        </p>
+
+        <p>
+          <strong>Account Name:</strong>
+          <%= item.beneficiary.bank_details.account_name %>
+        </p>
+
+        <p>
+          <strong>SWIFT:</strong>
+          <%= item.beneficiary.bank_details.swift_code %>
+        </p>
+
+        <form
+          method="POST"
+          action="/beneficiary/delete/<%= item._id %>"
+        >
+          <button
+            type="submit"
+            class="delete-btn"
+          >
+            Delete Beneficiary
+          </button>
+        </form>
+
+      </div>
+
+    <% }) %>
+
   </div>
 
 </body>

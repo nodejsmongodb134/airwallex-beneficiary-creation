@@ -2,7 +2,6 @@ const express = require("express");
 const path = require("path");
 const axios = require("axios");
 const mongoose = require("mongoose");
-
 const Beneficiary = require("./models/Beneficiary");
 
 const app = express();
@@ -67,9 +66,28 @@ async function getAccessToken() {
   }
 }
 
-// GET → render form
-app.get("/", (req, res) => {
-  res.render("index");
+// GET → render form + beneficiaries
+app.get("/", async (req, res) => {
+
+  try {
+
+    const beneficiaries =
+      await Beneficiary.find().sort({
+        createdAt: -1,
+      });
+
+    res.render("index", {
+      beneficiaries,
+    });
+
+  } catch (error) {
+
+    console.log(error);
+
+    res.render("index", {
+      beneficiaries: [],
+    });
+  }
 });
 
 // POST → create beneficiary on Airwallex
@@ -166,6 +184,60 @@ app.post("/beneficiary/create", async (req, res) => {
 
       <a href="/">Go Back</a>
     `);
+  }
+});
+
+// Delete beneficiary (Airwallex + MongoDB)
+
+app.post("/beneficiary/delete/:id", async (req, res) => {
+  let mongoRecord;
+
+  try {
+    // STEP 1: Find Mongo record
+    mongoRecord = await Beneficiary.findById(req.params.id);
+
+    if (!mongoRecord) {
+      return res.status(404).send("Not found");
+    }
+
+    // STEP 2: Get Airwallex token (IMPORTANT)
+    const token = await getAccessToken();
+
+    // STEP 3: Delete from Airwallex first
+    if (mongoRecord.beneficiary_id) {
+      try {
+        const deleteUrl = `${BASE_URL}/api/v1/beneficiaries/${mongoRecord.beneficiary_id}/delete`;
+
+        const response = await axios.post(
+          deleteUrl,
+          {},
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        console.log("Airwallex deleted:", response.data);
+      } catch (airwallexErr) {
+        console.log(
+          "Airwallex delete failed (ignored):",
+          airwallexErr.response?.data || airwallexErr.message
+        );
+      }
+    }
+
+    // STEP 4: Always delete from MongoDB
+    await Beneficiary.findByIdAndDelete(req.params.id);
+
+    console.log("MongoDB deleted");
+
+    return res.redirect("/");
+
+  } catch (error) {
+    console.log("Delete error:", error.response?.data || error.message);
+    return res.status(500).send("Delete failed");
   }
 });
 
