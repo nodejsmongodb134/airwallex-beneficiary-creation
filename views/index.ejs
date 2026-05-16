@@ -116,19 +116,23 @@
 
                 <td>
                   <button class="btn btn-sm btn-success"
-                    onclick='editBeneficiary(<%- JSON.stringify(b) %>)'>
-                    Edit
+                        onclick='editBeneficiary(<%- JSON.stringify(b) %>)'>
+                        Edit
                   </button>
 
-                  <form method="POST" action="/beneficiary/delete/<%= b._id %>" style="display:inline;">
-                    <button class="btn btn-sm btn-danger">
-                      Delete
-                    </button>
-                  </form>
-                </td>
+          <form method="POST" action="/beneficiary/delete/<%= b._id %>" style="display:inline;">
+                <button class="btn btn-sm btn-danger">Delete</button>
+          </form>
+
+          <!-- NEW: Transfer Button -->
+  <form method="GET" action="/transfer/page/<%= b.beneficiary_id %>" style="display:inline;">
+        <button class="btn btn-sm btn-primary">Transfer</button>
+  </form>
+</td>
               </tr>
             <% }) %>
           </tbody>
+          
         </table>
       </div>
 

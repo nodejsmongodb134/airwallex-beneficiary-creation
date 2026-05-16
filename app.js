@@ -3,6 +3,7 @@ const path = require("path");
 const axios = require("axios");
 const mongoose = require("mongoose");
 const Beneficiary = require("./models/Beneficiary");
+const Transfer = require("./models/Transfer");
 
 const app = express();
 const PORT = 3000;
@@ -323,6 +324,82 @@ app.post("/beneficiary/update/:id", async (req, res) => {
     return res.status(500).send("Update failed");
   }
 });
+
+
+//get transfer page with beneficiary details
+
+app.get("/transfer/page/:beneficiary_id", async (req, res) => {
+  const beneficiary_id = req.params.beneficiary_id;
+
+  const beneficiaries = await Beneficiary.find();
+
+  res.render("transfer", {
+    beneficiary_id,
+    beneficiaries,
+  });
+});
+
+
+// POST → create transfer on Airwallex + save to MongoDB
+
+app.post("/transfer/create", async (req, res) => {
+  try {
+    const token = await getAccessToken();
+
+    const payload = {
+      beneficiary_id: req.body.beneficiary_id,
+
+      transfer_amount: Number(req.body.transfer_amount),
+
+      transfer_currency: req.body.transfer_currency, // KEEP AS USER INPUT (NAD works if supported)
+
+      transfer_method: req.body.transfer_method,
+
+      reason: req.body.reason,
+
+      reference: `Test ${Date.now()}`,
+
+      request_id: `req_${Date.now()}`,
+
+      source_currency: req.body.source_currency,
+
+      source_amount: null,
+
+      swift_charge_option: req.body.swift_charge_option,
+    };
+
+    const response = await axios.post(
+      `${BASE_URL}/api/v1/transfers/create`,
+      payload,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    console.log("✅ SUCCESS:");
+    console.log(JSON.stringify(response.data, null, 2));
+
+    res.send(`
+      <h2>✅ Transfer Created Successfully</h2>
+      <pre>${JSON.stringify(response.data, null, 2)}</pre>
+      <a href="/transfer/page/${req.body.beneficiary_id}">Go Back</a>
+    `);
+
+  } catch (err) {
+    console.error("❌ ERROR:");
+    console.error(JSON.stringify(err.response?.data || err.message, null, 2));
+
+    res.status(500).send(`
+      <h2>❌ Transfer Failed</h2>
+      <pre>${JSON.stringify(err.response?.data || err.message, null, 2)}</pre>
+      <a href="/">Go Back</a>
+    `);
+  }
+});
+
 
 // Start server
 app.listen(PORT, () => {
