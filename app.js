@@ -6,10 +6,12 @@ const { BASE_URL, getAccessToken } = require("./utils/airwallex");
 const Beneficiary = require("./models/Beneficiary");
 const Transfer = require("./models/Transfer");
 
+require("dotenv").config();
+
 
 
 const app = express();
-const PORT = "process.env.PORT" || 3000;
+const PORT = "process.env.PORT";
 
 
 // Middleware
