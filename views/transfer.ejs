@@ -5,21 +5,59 @@
   <meta charset="UTF-8">
   <title>Create Transfer</title>
 
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+  >
 </head>
 
 <body class="bg-light">
 
 <div class="container py-4">
 
-  <h2 class="mb-4">Create Transfer</h2>
+  <!-- PAGE TITLE -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Create Transfer</h2>
 
-  <div class="card shadow-sm">
+    <a href="/" class="btn btn-secondary">
+      Back
+    </a>
+  </div>
+
+  <!-- 🔥 BENEFICIARY INFO -->
+  <div class="card shadow-sm mb-4">
+    <div class="card-body">
+
+      <h5 class="mb-2">Beneficiary Info</h5>
+
+      <p class="mb-1">
+        <strong>Name:</strong>
+        <%= beneficiary?.beneficiary?.company_name || "N/A" %>
+      </p>
+
+      <p class="mb-1">
+        <strong>Bank:</strong>
+        <%= beneficiary?.beneficiary?.bank_details?.bank_name || "N/A" %>
+      </p>
+
+      <p class="mb-1">
+        <strong>Beneficiary ID:</strong>
+        <%= beneficiary_id %>
+      </p>
+
+    </div>
+  </div>
+
+  <!-- TRANSFER FORM -->
+  <div class="card shadow-sm mb-4">
+    <div class="card-header">
+      New Transfer
+    </div>
+
     <div class="card-body">
 
       <form method="POST" action="/transfer/create">
 
-        <!-- Beneficiary -->
         <div class="mb-3">
           <label class="form-label">Beneficiary ID</label>
           <input
@@ -31,7 +69,6 @@
           >
         </div>
 
-        <!-- Amount -->
         <div class="row mb-3">
           <div class="col">
             <label class="form-label">Amount</label>
@@ -44,7 +81,6 @@
           </div>
         </div>
 
-        <!-- Method -->
         <div class="mb-3">
           <label class="form-label">Transfer Method</label>
           <select class="form-select" name="transfer_method">
@@ -52,19 +88,16 @@
           </select>
         </div>
 
-        <!-- Reason -->
         <div class="mb-3">
           <label class="form-label">Reason</label>
           <input type="text" class="form-control" name="reason" value="professional_business_services">
         </div>
 
-        <!-- Source Currency -->
         <div class="mb-3">
           <label class="form-label">Source Currency</label>
-          <input type="text" class="form-control" name="source_currency" value="BGP">
+          <input type="text" class="form-control" name="source_currency" value="GBP">
         </div>
 
-        <!-- Charge Option -->
         <div class="mb-3">
           <label class="form-label">SWIFT Charge Option</label>
           <select class="form-select" name="swift_charge_option">
@@ -79,6 +112,153 @@
         </button>
 
       </form>
+
+    </div>
+  </div>
+
+  <!-- 🔍 SEARCH BAR -->
+  <div class="card shadow-sm mb-3">
+    <div class="card-body">
+
+      <form method="GET" action="/transfer/page/<%= beneficiary_id %>">
+
+        <div class="row g-2">
+
+          <div class="col-md-10">
+            <input
+              type="text"
+              name="search"
+              value="<%= search || '' %>"
+              class="form-control"
+              placeholder="Search by Transfer ID or Beneficiary Name..."
+            >
+          </div>
+
+          <div class="col-md-2 d-grid">
+            <button class="btn btn-primary">
+              Search
+            </button>
+          </div>
+
+        </div>
+
+      </form>
+
+    </div>
+  </div>
+
+  <!-- TRANSFER HISTORY -->
+  <div class="card shadow-sm">
+
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <span>Transfer History</span>
+
+      <a
+        href="/transfer/page/<%= beneficiary_id %>"
+        class="btn btn-sm btn-outline-primary"
+      >
+        Refresh
+      </a>
+    </div>
+
+    <div class="card-body p-0">
+
+      <% if (!transfers || transfers.length === 0) { %>
+        <div class="p-3">No transfers found.</div>
+      <% } else { %>
+
+        <div class="table-responsive">
+
+          <table class="table table-striped mb-0">
+
+            <thead>
+              <tr>
+                <th>Beneficiary</th>
+                <th>Transfer ID</th>
+                <th>Amount</th>
+                <th>Currency</th>
+                <th>Status</th>
+                <th>Method</th>
+                <th>Created</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+
+            <tbody>
+
+              <% transfers.forEach(t => { %>
+                <tr>
+
+                  <!-- Beneficiary -->
+                  <td>
+                    <strong>
+                      <%= beneficiary?.beneficiary?.company_name || "Unknown" %>
+                    </strong>
+                  </td>
+
+                  <!-- Transfer ID -->
+                  <td>
+                    <small class="text-muted">
+                      <%= t.transfer_id %>
+                    </small>
+                  </td>
+
+                  <td><%= t.transfer_amount %></td>
+                  <td><%= t.transfer_currency %></td>
+
+                  <td>
+                    <% if (t.status === "PAID") { %>
+                      <span class="badge bg-success">PAID</span>
+                    <% } else if (t.status === "FAILED") { %>
+                      <span class="badge bg-danger">FAILED</span>
+                    <% } else if (t.status === "PROCESSING") { %>
+                      <span class="badge bg-warning text-dark">PROCESSING</span>
+                    <% } else if (t.status === "CANCELLED") { %>
+                      <span class="badge bg-secondary">CANCELLED</span>
+                    <% } else { %>
+                      <span class="badge bg-info text-dark">PENDING</span>
+                    <% } %>
+                  </td>
+
+                  <td><%= t.transfer_method %></td>
+
+                  <td>
+                    <%= new Date(t.createdAt).toLocaleString() %>
+                  </td>
+
+                  <!-- ACTIONS -->
+                  <td>
+
+                    <!-- CANCEL -->
+                    <% if (t.status === "PENDING" || t.status === "PROCESSING") { %>
+                      <form method="POST" action="/transfer/cancel/<%= t._id %>" style="display:inline;">
+                        <button class="btn btn-sm btn-danger">
+                          Cancel
+                        </button>
+                      </form>
+                    <% } %>
+
+                    <!-- RESEND -->
+                    <% if (t.status === "FAILED") { %>
+                      <form method="POST" action="/transfer/resend/<%= t._id %>" style="display:inline;">
+                        <button class="btn btn-sm btn-warning">
+                          Resend
+                        </button>
+                      </form>
+                    <% } %>
+
+                  </td>
+
+                </tr>
+              <% }) %>
+
+            </tbody>
+
+          </table>
+
+        </div>
+
+      <% } %>
 
     </div>
   </div>
