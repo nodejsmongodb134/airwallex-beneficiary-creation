@@ -15,6 +15,37 @@
 
 <div class="container py-4">
 
+  
+<% if (user) { %>
+
+  <div class="alert alert-info d-flex justify-content-between align-items-center mb-3">
+
+    <div>
+      👋 Welcome, <strong><%= user.username %></strong>
+    </div>
+
+    <div class="d-flex align-items-center gap-2">
+
+      <span>
+        Role:
+        <% if (user.role === "ADMIN") { %>
+          <span class="badge bg-danger">ADMIN</span>
+        <% } else { %>
+          <span class="badge bg-primary">CASHIER</span>
+        <% } %>
+      </span>
+
+      <a href="/logout" class="btn btn-sm btn-dark">
+        Logout
+      </a>
+
+    </div>
+
+  </div>
+
+<% } %>
+
+
   <h2 class="mb-4">Beneficiary Manager</h2>
 
   <!-- FORM -->

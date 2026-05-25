@@ -8,24 +8,22 @@ const router = express.Router();
 
 // GET → render form + beneficiaries
 router.get("/", async (req, res) => {
-
   try {
-
-    const beneficiaries =
-      await Beneficiary.find().sort({
-        createdAt: -1,
-      });
+    const beneficiaries = await Beneficiary.find().sort({
+      createdAt: -1,
+    });
 
     res.render("index", {
       beneficiaries,
+      user: req.session.user, // 👈 ADD THIS
     });
 
   } catch (error) {
-
     console.log(error);
 
     res.render("index", {
       beneficiaries: [],
+      user: req.session.user,
     });
   }
 });

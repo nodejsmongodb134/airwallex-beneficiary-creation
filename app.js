@@ -2,17 +2,34 @@ const express = require("express");
 const path = require("path");
 const axios = require("axios");
 const mongoose = require("mongoose");
+const session = require("express-session");
 const { BASE_URL, getAccessToken } = require("./utils/airwallex");
 const Beneficiary = require("./models/Beneficiary");
+const User = require("./models/User");
 const Transfer = require("./models/Transfer");
-
 require("dotenv").config();
 
 
-
 const app = express();
-const PORT = "process.env.PORT";
+const PORT = process.env.PORT;
 
+
+app.use(session({
+  secret: "secret",
+  resave: false,
+  saveUninitialized: false
+}));
+
+
+/*
+// AUTH MIDDLEWARE
+function authCheck(req, res, next) {
+  if (!req.session.user) {
+    return res.redirect("/login");
+  }
+  next();
+}
+*/  
 
 // Middleware
 app.use(express.urlencoded({ extended: true }));
@@ -23,11 +40,10 @@ app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
 
 
-
-
 // ==========================================
 // TRANSFER STATUS SYNC
 // ==========================================
+
 async function syncTransferStatus(transferId, mongoId) {
 
   const token = await getAccessToken();
@@ -116,17 +132,23 @@ if (!global.__SYNC_LOOP_STARTED__) {
   }, 120000);
 }
 
+// Auth Import
+const auth = require("./middleware/auth");
+app.use("/", require("./routes/auth")); // login, register, forgot, reset
+
 const beneficiaryRoutes = require("./routes/create.beneficiary");
-app.use("/", beneficiaryRoutes);
-
 const deleteUpdateRoutes = require("./routes/DeleteUpdate.beneficiary");
-app.use("/", deleteUpdateRoutes);
-
 const transferRoutes = require("./routes/Transfer.beneficiary");
-app.use("/", transferRoutes);
-
 const databaseRoutes = require("./routes/Database");
-app.use("/", databaseRoutes);
+const userRoutes = require("./routes/user");
+const authRoutes = require("./routes/auth");
+
+
+// Protect Routes
+app.use("/", auth, require("./routes/create.beneficiary"));
+app.use("/", auth, require("./routes/DeleteUpdate.beneficiary"));
+app.use("/", auth, require("./routes/Transfer.beneficiary"));
+app.use("/", auth, require("./routes/Database"));
 
 
 
