@@ -1,0 +1,176 @@
+<div class="card shadow-sm border-0 mb-4">
+
+  <!-- HEADER -->
+  <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+    <strong>Recent Transfers</strong>
+    <small class="text-light">Latest payment activity</small>
+  </div>
+
+  <!-- SEARCH BAR -->
+  <div class="card-body border-bottom bg-light">
+
+    <div class="row">
+      <div class="col-md-4">
+
+        <input
+          type="text"
+          class="form-control"
+          placeholder="Search Transfer ID, Beneficiary ID, Reference..."
+          onkeyup="filterTransfers(this.value)"
+        />
+
+      </div>
+    </div>
+
+  </div>
+
+  <!-- BODY -->
+  <div class="card-body p-0">
+
+    <div class="table-responsive">
+
+      <table class="table table-hover table-striped align-middle mb-0">
+
+        <!-- HEADER -->
+        <thead class="table-dark text-nowrap">
+          <tr>
+            <th>Transfer ID</th>
+            <th>Beneficiary ID</th>
+
+            <th>Amount</th>
+            <th>Currency</th>
+            <th>Method</th>
+
+            <th>Reason</th>
+            <th>Reference</th>
+
+            <th>Source Currency</th>
+            <th>Source Amount</th>
+
+            <th>SWIFT Option</th>
+            <th>Status</th>
+
+            <th>Created</th>
+          </tr>
+        </thead>
+
+        <!-- BODY -->
+        <tbody id="transferTable">
+
+          <% recentTransfers.forEach(t => { %>
+
+          <tr>
+
+            <!-- Transfer ID -->
+            <td class="font-monospace text-muted small">
+              <%= t.transfer_id || "N/A" %>
+            </td>
+
+            <!-- Beneficiary -->
+            <td class="text-muted small">
+              <%= t.beneficiary_id || "N/A" %>
+            </td>
+
+            <!-- Amount -->
+            <td>
+              <strong><%= t.transfer_amount || 0 %></strong>
+            </td>
+
+            <!-- Currency -->
+            <td>
+              <span class="badge bg-success">
+                <%= t.transfer_currency || "N/A" %>
+              </span>
+            </td>
+
+            <!-- Method -->
+            <td>
+              <span class="badge bg-primary">
+                <%= t.transfer_method || "N/A" %>
+              </span>
+            </td>
+
+            <!-- Reason -->
+            <td class="text-truncate" style="max-width:140px;">
+              <%= t.reason || "N/A" %>
+            </td>
+
+            <!-- Reference -->
+            <td class="text-truncate" style="max-width:140px;">
+              <%= t.reference || "N/A" %>
+            </td>
+
+            <!-- Source Currency -->
+            <td>
+              <%= t.source_currency || "N/A" %>
+            </td>
+
+            <!-- Source Amount -->
+            <td>
+              <%= t.source_amount || "N/A" %>
+            </td>
+
+            <!-- SWIFT -->
+            <td>
+              <span class="badge bg-dark">
+                <%= t.swift_charge_option || "N/A" %>
+              </span>
+            </td>
+
+            <!-- STATUS -->
+            <td>
+
+              <% if (t.status === "SUCCESS") { %>
+                <span class="badge bg-success">SUCCESS</span>
+
+              <% } else if (t.status === "PENDING") { %>
+                <span class="badge bg-warning text-dark">PENDING</span>
+
+              <% } else if (t.status === "FAILED") { %>
+                <span class="badge bg-danger">FAILED</span>
+
+              <% } else { %>
+                <span class="badge bg-secondary"><%= t.status %></span>
+              <% } %>
+
+            </td>
+
+            <!-- CREATED -->
+            <td class="text-muted small">
+              <%= new Date(t.createdAt).toLocaleString() %>
+            </td>
+
+          </tr>
+
+          <% }) %>
+
+        </tbody>
+
+      </table>
+
+    </div>
+
+  </div>
+</div>
+
+<!-- SEARCH SCRIPT -->
+<script>
+function filterTransfers(query) {
+  const rows = document.querySelectorAll("#transferTable tr");
+  query = query.toLowerCase();
+
+  rows.forEach(row => {
+
+    const transferId = row.children[0]?.innerText.toLowerCase();   // Transfer ID
+    const beneficiaryId = row.children[1]?.innerText.toLowerCase(); // Beneficiary ID
+    const reference = row.children[6]?.innerText.toLowerCase();     // Reference
+
+    const match =
+      transferId.includes(query) ||
+      beneficiaryId.includes(query) ||
+      reference.includes(query);
+
+    row.style.display = match ? "" : "none";
+  });
+}
+</script>

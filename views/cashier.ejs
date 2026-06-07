@@ -1,0 +1,245 @@
+<!-- views/index.ejs -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Beneficiary Manager</title>
+
+  <!-- Bootstrap 5 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
+
+</head>
+
+<body class="bg-light">
+
+<div class="container py-4">
+
+  
+<% if (user) { %>
+
+  <div class="alert alert-info d-flex justify-content-between align-items-center mb-3">
+
+    <div>
+      👋 Welcome, <strong><%= user.username %></strong>
+    </div>
+
+    <div class="d-flex align-items-center gap-2">
+
+      <span>
+        Role:
+        <% if (user.role === "ADMIN") { %>
+          <span class="badge bg-danger">ADMIN</span>
+        <% } else { %>
+          <span class="badge bg-primary">CASHIER</span>
+        <% } %>
+      </span>
+
+      <a href="/logout" class="btn btn-sm btn-dark">
+        Logout
+      </a>
+
+    </div>
+
+  </div>
+
+<% } %>
+
+  <h2 class="mb-4">Beneficiary Manager</h2>
+
+  <!-- FORM -->
+  <div class="card mb-4 shadow-sm">
+    <div class="card-header">
+      Create / Edit Beneficiary
+    </div>
+
+    <div class="card-body">
+
+      <form id="beneficiaryForm" method="POST" action="/beneficiary/create">
+
+        <input type="hidden" id="beneficiaryId"/>
+
+        <h5>Address</h5>
+        <div class="row g-2 mb-2">
+          <div class="col"><input class="form-control" name="address[city]" placeholder="City" required></div>
+          <div class="col"><input class="form-control" name="address[country_code]" placeholder="Country Code" required></div>
+        </div>
+
+        <div class="row g-2 mb-2">
+          <div class="col"><input class="form-control" name="address[postcode]" placeholder="Postcode" required></div>
+          <div class="col"><input class="form-control" name="address[state]" placeholder="State" required></div>
+        </div>
+
+        <input class="form-control mb-3" name="address[street_address]" placeholder="Street Address" required>
+
+        <h5>Bank Details</h5>
+
+        <div class="row g-2 mb-2">
+          <div class="col"><input class="form-control" name="bank_details[account_currency]" placeholder="Currency"></div>
+          <div class="col"><input class="form-control" name="bank_details[account_name]" placeholder="Account Name"></div>
+        </div>
+
+        <div class="row g-2 mb-2">
+          <div class="col"><input class="form-control" name="bank_details[account_number]" placeholder="Account Number"></div>
+          <div class="col"><input class="form-control" name="bank_details[bank_country_code]" placeholder="Bank Country"></div>
+        </div>
+
+        <div class="row g-2 mb-2">
+          <div class="col"><input class="form-control" name="bank_details[bank_name]" placeholder="Bank Name"></div>
+          <div class="col"><input class="form-control" name="bank_details[swift_code]" placeholder="SWIFT Code"></div>
+        </div>
+
+        <h5>Company</h5>
+
+        <input class="form-control mb-2" name="company_name" placeholder="Company Name">
+
+        <select class="form-select mb-2" name="entity_type">
+          <option value="COMPANY">COMPANY</option>
+          <option value="PERSONAL">PERSONAL</option>
+        </select>
+
+        <select class="form-select mb-2" name="type">
+          <option value="BANK_ACCOUNT">BANK_ACCOUNT</option>
+        </select>
+
+        <select class="form-select mb-3" name="transfer_methods[]">
+          <option value="SWIFT">SWIFT</option>
+        </select>
+
+        <button class="btn btn-primary w-100" type="submit">
+          Save Beneficiary
+        </button>
+
+      </form>
+    </div>
+  </div>
+
+  <!-- TABLE 
+  <div class="card shadow-sm">
+    <div class="card-header">
+      Saved Beneficiaries
+    </div>
+  -->
+        <!-- 🔥 SEARCH BAR ADDED -->
+    <div class="p-3 border-bottom bg-white">
+
+      <div class="card shadow-sm">
+    <div class="card-header">
+      Saved Beneficiaries
+    </div>
+
+      <input 
+        type="text" 
+        id="searchInput" 
+        class="form-control" 
+        placeholder="Search by Company, City or Bank..."
+        onkeyup="filterTable()"
+      />
+    </div>
+
+    
+
+    <div class="card-body p-0">
+
+      <% if (!beneficiaries || beneficiaries.length === 0) { %>
+        <div class="p-3">No beneficiaries found.</div>
+      <% } else { %>
+
+      <div class="table-responsive">
+        <table class="table table-striped mb-0">
+          <thead>
+            <tr>
+              <th>Company</th>
+              <th>City</th>
+              <th>Bank</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <% beneficiaries.forEach(b => { %>
+              <tr>
+                <td><%= b.beneficiary.company_name %></td>
+                <td><%= b.beneficiary.address.city %></td>
+                <td><%= b.beneficiary.bank_details.bank_name %></td>
+
+                <td>
+                  <button class="btn btn-sm btn-success"
+                        onclick='editBeneficiary(<%- JSON.stringify(b) %>)'>
+                        Edit
+                  </button>
+
+          <form method="POST" action="/beneficiary/delete/<%= b._id %>" style="display:inline;">
+                <button class="btn btn-sm btn-danger">Delete</button>
+          </form>
+
+          <!-- NEW: Transfer Button -->
+  <form method="GET" action="/transfer/page/<%= b.beneficiary_id %>" style="display:inline;">
+        <button class="btn btn-sm btn-primary">Transfer</button>
+  </form>
+</td>
+              </tr>
+            <% }) %>
+          </tbody>
+          
+        </table>
+      </div>
+
+      <% } %>
+
+    </div>
+  </div>
+
+</div>
+
+<script>
+function editBeneficiary(data) {
+  const form = document.getElementById("beneficiaryForm");
+
+  form.action = "/beneficiary/update/" + data._id;
+
+  form["address[city]"].value = data.beneficiary.address.city;
+  form["address[country_code]"].value = data.beneficiary.address.country_code;
+  form["address[postcode]"].value = data.beneficiary.address.postcode;
+  form["address[state]"].value = data.beneficiary.address.state;
+  form["address[street_address]"].value = data.beneficiary.address.street_address;
+
+  form["bank_details[account_currency]"].value = data.beneficiary.bank_details.account_currency;
+  form["bank_details[account_name]"].value = data.beneficiary.bank_details.account_name;
+  form["bank_details[account_number]"].value = data.beneficiary.bank_details.account_number;
+  form["bank_details[bank_country_code]"].value = data.beneficiary.bank_details.bank_country_code;
+  form["bank_details[bank_name]"].value = data.beneficiary.bank_details.bank_name;
+  form["bank_details[swift_code]"].value = data.beneficiary.bank_details.swift_code;
+
+  form["company_name"].value = data.beneficiary.company_name;
+  form["entity_type"].value = data.beneficiary.entity_type;
+  form["type"].value = data.beneficiary.type;
+}
+</script>
+
+<script>
+function filterTable() {
+  const input = document.getElementById("searchInput");
+  const filter = input.value.toLowerCase();
+  const rows = document.querySelectorAll("tbody tr");
+
+  rows.forEach(row => {
+    const company = row.cells[0].innerText.toLowerCase();
+    const city = row.cells[1].innerText.toLowerCase();
+    const bank = row.cells[2].innerText.toLowerCase();
+
+    if (
+      company.includes(filter) ||
+      city.includes(filter) ||
+      bank.includes(filter)
+    ) {
+      row.style.display = "";
+    } else {
+      row.style.display = "none";
+    }
+  });
+}
+</script>
+
+</body>
+</html>

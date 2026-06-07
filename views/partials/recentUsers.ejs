@@ -1,0 +1,123 @@
+<div class="card shadow-sm border-0 mb-4">
+
+  <!-- HEADER -->
+  <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+    <strong>Recent Users</strong>
+
+    <input
+      type="text"
+      id="userSearch"
+      class="form-control form-control-sm w-25"
+      placeholder="Search users..."
+      onkeyup="searchUsers()"
+    >
+  </div>
+
+  <div class="card-body p-0">
+
+    <div class="table-responsive">
+
+      <table
+        class="table table-bordered table-hover align-middle mb-0"
+        id="usersTable"
+      >
+
+        <thead class="table-light">
+          <tr>
+            <th>Username</th>
+            <th>Email</th>
+            <th>Role</th>
+            <th>Status</th>
+            <th width="350">Actions</th>
+          </tr>
+        </thead>
+
+        <tbody>
+
+        <% recentUsers.forEach(user => { %>
+
+          <tr>
+
+            <td><%= user.username %></td>
+
+            <td><%= user.email %></td>
+
+            <td>
+              <% if (user.role === "ADMIN") { %>
+                <span class="badge bg-danger">ADMIN</span>
+              <% } else { %>
+                <span class="badge bg-primary">CASHIER</span>
+              <% } %>
+            </td>
+
+            <td>
+              <% if (user.blocked) { %>
+                <span class="badge bg-danger">BLOCKED</span>
+              <% } else { %>
+                <span class="badge bg-success">ACTIVE</span>
+              <% } %>
+            </td>
+
+            <td>
+
+              <% if (!user.blocked) { %>
+              <form method="POST" action="/admin/block-user/<%= user._id %>" style="display:inline;">
+                <button class="btn btn-warning btn-sm">Block</button>
+              </form>
+              <% } %>
+
+              <% if (user.blocked) { %>
+              <form method="POST" action="/admin/unblock-user/<%= user._id %>" style="display:inline;">
+                <button class="btn btn-success btn-sm">Unblock</button>
+              </form>
+              <% } %>
+
+              <form method="POST" action="/admin/reset-password/<%= user._id %>" style="display:inline;">
+                <button class="btn btn-primary btn-sm">Reset Password</button>
+              </form>
+
+              <form method="POST" action="/admin/delete-user/<%= user._id %>" style="display:inline;">
+                <button class="btn btn-danger btn-sm">
+                  Delete
+                </button>
+              </form>
+
+            </td>
+
+          </tr>
+
+        <% }) %>
+
+        </tbody>
+
+      </table>
+
+    </div>
+
+  </div>
+
+</div>
+
+<script>
+function searchUsers() {
+
+  let input =
+    document.getElementById("userSearch")
+    .value
+    .toLowerCase();
+
+  let rows =
+    document.querySelectorAll("#usersTable tbody tr");
+
+  rows.forEach(row => {
+
+    let text = row.innerText.toLowerCase();
+
+    row.style.display =
+      text.includes(input)
+      ? ""
+      : "none";
+
+  });
+}
+</script>

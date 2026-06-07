@@ -1,0 +1,223 @@
+<div class="card shadow-sm border-0 mb-4">
+
+  <!-- HEADER -->
+  <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+    <strong>Recent Beneficiaries</strong>
+    <small class="text-light">Latest records</small>
+  </div>
+
+  <!-- SEARCH BAR -->
+  <div class="card-body border-bottom bg-light">
+
+    <div class="row">
+      <div class="col-md-4">
+
+        <input
+          type="text"
+          id="beneficiarySearch"
+          class="form-control"
+          placeholder="Search beneficiaries..."
+        >
+
+      </div>
+    </div>
+
+  </div>
+
+  <!-- TABLE -->
+  <div class="card-body p-0">
+
+    <div class="table-responsive">
+
+      <table
+        class="table table-hover table-striped align-middle mb-0"
+        id="beneficiaryTable"
+      >
+
+        <!-- HEADER -->
+        <thead class="table-dark text-nowrap">
+          <tr>
+            <th>ID</th>
+            <th>Company</th>
+            <th>Entity</th>
+            <th>Type</th>
+
+            <th>Account Name</th>
+            <th>Account No</th>
+            <th>Currency</th>
+
+            <th>Bank</th>
+            <th>Bank Country</th>
+            <th>SWIFT</th>
+
+            <th>Address</th>
+            <th>City</th>
+            <th>State</th>
+            <th>Postcode</th>
+            <th>Country</th>
+
+            <th>Methods</th>
+            <th>Created</th>
+          </tr>
+        </thead>
+
+        <!-- BODY -->
+        <tbody>
+
+          <% recentBeneficiaries.forEach(b => { %>
+
+          <tr>
+
+            <!-- ID -->
+            <td class="text-muted small">
+              <%= b.beneficiary_id || "N/A" %>
+            </td>
+
+            <!-- Company -->
+            <td>
+              <strong>
+                <%= b.beneficiary?.company_name || "N/A" %>
+              </strong>
+            </td>
+
+            <!-- Entity -->
+            <td>
+              <span class="badge bg-primary">
+                <%= b.beneficiary?.entity_type || "N/A" %>
+              </span>
+            </td>
+
+            <!-- Type -->
+            <td>
+              <span class="badge bg-secondary">
+                <%= b.beneficiary?.type || "N/A" %>
+              </span>
+            </td>
+
+            <!-- Account Name -->
+            <td>
+              <%= b.beneficiary?.bank_details?.account_name || "N/A" %>
+            </td>
+
+            <!-- Account Number -->
+            <td class="font-monospace">
+              <%= b.beneficiary?.bank_details?.account_number || "N/A" %>
+            </td>
+
+            <!-- Currency -->
+            <td>
+              <span class="badge bg-success">
+                <%= b.beneficiary?.bank_details?.account_currency || "N/A" %>
+              </span>
+            </td>
+
+            <!-- Bank -->
+            <td>
+              <%= b.beneficiary?.bank_details?.bank_name || "N/A" %>
+            </td>
+
+            <!-- Bank Country -->
+            <td>
+              <span class="badge bg-dark">
+                <%= b.beneficiary?.bank_details?.bank_country_code || "N/A" %>
+              </span>
+            </td>
+
+            <!-- SWIFT -->
+            <td>
+              <code>
+                <%= b.beneficiary?.bank_details?.swift_code || "N/A" %>
+              </code>
+            </td>
+
+            <!-- Address -->
+            <td class="text-truncate" style="max-width:160px;">
+              <%= b.beneficiary?.address?.street_address || "N/A" %>
+            </td>
+
+            <!-- City -->
+            <td>
+              <%= b.beneficiary?.address?.city || "N/A" %>
+            </td>
+
+            <!-- State -->
+            <td>
+              <%= b.beneficiary?.address?.state || "N/A" %>
+            </td>
+
+            <!-- Postcode -->
+            <td>
+              <%= b.beneficiary?.address?.postcode || "N/A" %>
+            </td>
+
+            <!-- Country -->
+            <td>
+              <span class="badge bg-info text-dark">
+                <%= b.beneficiary?.address?.country_code || "N/A" %>
+              </span>
+            </td>
+
+            <!-- Transfer Methods -->
+            <td>
+
+              <% (b.transfer_methods || []).forEach(m => { %>
+
+                <span class="badge bg-light text-dark border me-1">
+                  <%= m %>
+                </span>
+
+              <% }) %>
+
+            </td>
+
+            <!-- Created -->
+            <td class="text-muted small">
+              <%= new Date(b.createdAt).toLocaleString() %>
+            </td>
+
+          </tr>
+
+          <% }) %>
+
+        </tbody>
+
+      </table>
+
+    </div>
+
+  </div>
+
+</div>
+
+<!-- SEARCH SCRIPT -->
+<script>
+
+document
+  .getElementById("beneficiarySearch")
+  .addEventListener("keyup", function () {
+
+    const value = this.value.toLowerCase();
+
+    const rows = document.querySelectorAll("#beneficiaryTable tbody tr");
+
+    rows.forEach(row => {
+
+      // get specific columns
+      const id = row.children[0]?.innerText.toLowerCase();      // ID
+      const company = row.children[1]?.innerText.toLowerCase(); // Company
+      const accountNo = row.children[5]?.innerText.toLowerCase(); // Account Number
+      const bank = row.children[7]?.innerText.toLowerCase();    // Bank Name
+
+      const match =
+        id.includes(value) ||
+        company.includes(value) ||
+        accountNo.includes(value) ||
+        bank.includes(value);
+
+      row.style.display = match ? "" : "none";
+
+    });
+
+  });
+
+</script>
