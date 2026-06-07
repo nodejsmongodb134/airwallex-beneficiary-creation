@@ -7,6 +7,11 @@ const TransferSchema = new mongoose.Schema(
       default: "",
     },
 
+    userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User"
+    },
+
     beneficiary_id: {
       type: String,
       required: true,
